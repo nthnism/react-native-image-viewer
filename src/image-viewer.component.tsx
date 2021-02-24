@@ -64,14 +64,7 @@ export default class ImageViewer extends React.Component<Props, State> {
       // 立刻预加载要看的图
       this.loadImage(this.props.index || 0);
 
-      this.jumpToCurrentImage();
-
-      // 显示动画
-      Animated.timing(this.fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: !!this.props.useNativeDriver
-      }).start();
+      this.jumpToCurrentImage({ animated: true });
     }
   }
 
@@ -125,11 +118,27 @@ export default class ImageViewer extends React.Component<Props, State> {
   /**
    * 调到当前看图位置
    */
-  public jumpToCurrentImage() {
-    // 跳到当前图的位置
-    this.positionXNumber = this.width * (this.state.currentShowIndex || 0) * (I18nManager.isRTL ? 1 : -1);
+  public jumpToCurrentImage(params?: IJumpParams) {
+    const _params = {
+      animated: false,
+      ...params,
+    };
+
+    this.positionXNumber =
+      this.width *
+      (this.state.currentShowIndex || 0) *
+      (I18nManager.isRTL ? 1 : -1);
     this.standardPositionX = this.positionXNumber;
-    this.positionX.setValue(this.positionXNumber);
+    if (!_params.animated) {
+      this.positionX.setValue(this.positionXNumber);
+      return;
+    }
+    Animated.timing(this.positionX, {
+      toValue: this.positionXNumber,
+      easing: Easing.linear,
+      duration: this.props.pageAnimateTime,
+      useNativeDriver: !!this.props.useNativeDriver,
+    }).start();
   }
 
   /**
